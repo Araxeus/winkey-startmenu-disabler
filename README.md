@@ -71,3 +71,9 @@ To release, push a tag such as `v1.0.0`. The `Release` workflow builds, attests 
 ## License
 
 [MIT](LICENSE)
+
+### Third-party software
+
+- The exe includes the [AutoHotkey](https://github.com/AutoHotkey/AutoHotkey) v2 interpreter, licensed under [GPL-2.0](https://github.com/AutoHotkey/AutoHotkey/blob/v2.0/license.txt)
+- The exe is compressed with [UPX](https://github.com/upx/upx), whose [license](https://github.com/upx/upx/blob/devel/LICENSE) allows distributing compressed programs
+- The installer is built with [Inno Setup](https://jrsoftware.org/isinfo.php), under the [Inno Setup License](https://jrsoftware.org/files/is/license.txt)
