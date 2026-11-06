@@ -19,7 +19,10 @@ Run `disable-winkey-startmenu-setup.exe /CURRENTUSER`. This install works everyw
 
 ## Usage
 
-The app starts with Windows and lives in the tray. Its tray menu has **Quit**. To start it again, open **Disable WinKey Start Menu** from the Start menu.
+The app starts with Windows and lives in the tray.
+
+- **Pause** gives the Win key back until you resume. The tray icon turns gray while paused. Double-clicking the tray icon also toggles it.
+- **Quit** closes the app. To start it again, open **Disable WinKey Start Menu** from the Start menu.
 
 - Turn off starting with Windows in Task Manager › Startup apps
 - Uninstall from Settings › Apps

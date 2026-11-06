@@ -5,6 +5,7 @@
 #SingleInstance Off
 
 ;@Ahk2Exe-SetMainIcon icons\disable_start_menu.ico
+;@Ahk2Exe-AddResource icons\disable_start_menu_paused.ico, 210
 ;@Ahk2Exe-SetName Disable WinKey Start Menu
 ;@Ahk2Exe-SetProductName Disable WinKey Start Menu
 ;@Ahk2Exe-SetDescription Disable WinKey Start Menu
@@ -29,12 +30,33 @@ if A_IsCompiled {
         ExitApp
 
     A_TrayMenu.Delete()
+    A_TrayMenu.Add("Pause", TogglePause)
     A_TrayMenu.Add("Quit", (*) => ExitApp())
 } else {
-    TraySetIcon("icons\disable_start_menu.ico")
+    A_TrayMenu.Insert("1&", "Pause", TogglePause)
+    A_TrayMenu.Insert("2&")
 }
 
-A_IconTip := "Disable WinKey Start Menu"
+; Double-clicking the tray icon runs the default item.
+A_TrayMenu.Default := "Pause"
+UpdateTray()
+
+TogglePause(*) {
+    Suspend(-1)
+    A_TrayMenu.ToggleCheck("Pause")
+    UpdateTray()
+}
+
+; The compiled exe holds both icons as resources: 159 is the main icon, 210 the paused one.
+; Freezing stops Suspend from swapping in AutoHotkey's own suspended icon.
+UpdateTray() {
+    if A_IsCompiled
+        TraySetIcon(A_ScriptFullPath, A_IsSuspended ? -210 : -159, true)
+    else
+        TraySetIcon(A_ScriptDir "\icons\disable_start_menu" (A_IsSuspended ? "_paused" : "") ".ico", , true)
+
+    A_IconTip := "Disable WinKey Start Menu" (A_IsSuspended ? " (paused)" : "")
+}
 
 LWin::Send("{LWin Down}")
 
