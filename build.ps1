@@ -2,7 +2,8 @@
 
 <#
 .SYNOPSIS
-    Downloads pinned, hash-checked build tools and compiles the script with Ahk2Exe + UPX.
+    Downloads pinned, hash-checked build tools, compiles the script with Ahk2Exe + UPX,
+    and builds the Inno Setup installer.
 .PARAMETER Version
     Version stamped into the exe. Defaults to 0.0.0.
 #>
@@ -35,27 +36,40 @@ $deps = @(
         Sha256 = 'd127996c76615e431be810e9c8d2910dbe3dd400600c5c0c50276fc5a17a9705'
         Dir    = 'upx'
     }
+    @{
+        Url    = 'https://github.com/jrsoftware/issrc/releases/download/is-6_7_4/innosetup-6.7.4.exe'
+        Sha256 = 'a549929319f9120716677c685535ca4671e4b937b5fdc87e2585f32d8eb30e8c'
+        Dir    = 'inno'
+    }
 )
 
 New-Item -ItemType Directory -Force $tools, $dist | Out-Null
 
 foreach ($dep in $deps) {
-    $zip = Join-Path $tools (Split-Path $dep.Url -Leaf)
+    $file = Join-Path $tools (Split-Path $dep.Url -Leaf)
     $out = Join-Path $tools $dep.Dir
 
-    if (-not (Test-Path $zip)) {
+    if (-not (Test-Path $file)) {
         Write-Host "Downloading $($dep.Url)"
-        Invoke-WebRequest $dep.Url -OutFile $zip
+        Invoke-WebRequest $dep.Url -OutFile $file
     }
 
-    $hash = (Get-FileHash $zip -Algorithm SHA256).Hash
+    $hash = (Get-FileHash $file -Algorithm SHA256).Hash
     if ($hash -ne $dep.Sha256) {
-        Remove-Item $zip
-        throw "Hash mismatch for $zip. Expected $($dep.Sha256), got $hash."
+        Remove-Item $file
+        throw "Hash mismatch for $file. Expected $($dep.Sha256), got $hash."
     }
 
-    if (-not (Test-Path $out)) {
-        Expand-Archive $zip $out
+    if (Test-Path $out) { continue }
+
+    if ($file.EndsWith('.zip')) {
+        Expand-Archive $file $out
+    }
+    else {
+        # Portable mode unpacks Inno Setup without registering it on the system.
+        $innoArgs = '/VERYSILENT', '/SUPPRESSMSGBOXES', '/NORESTART', '/CURRENTUSER', '/PORTABLE=1', "/DIR=`"$out`""
+        $p = Start-Process $file -ArgumentList $innoArgs -Wait -PassThru
+        if ($p.ExitCode -ne 0) { throw "Inno Setup unpack exited with code $($p.ExitCode)." }
     }
 }
 
@@ -90,6 +104,14 @@ finally {
 
 if (-not (Test-Path $exe)) { throw 'Ahk2Exe produced no exe.' }
 
-$hash = (Get-FileHash $exe -Algorithm SHA256).Hash.ToLower()
-Write-Host "Built $exe ($Version)"
-Write-Host "SHA256 $hash"
+$setup = Join-Path $dist "$name-setup.exe"
+Remove-Item $setup -ErrorAction SilentlyContinue
+
+& (Join-Path $tools 'inno\ISCC.exe') /Q "/DAppVersion=$Version" (Join-Path $root 'installer.iss')
+if ($LASTEXITCODE -ne 0) { throw "ISCC exited with code $LASTEXITCODE." }
+
+foreach ($file in $exe, $setup) {
+    $hash = (Get-FileHash $file -Algorithm SHA256).Hash.ToLower()
+    Write-Host "Built $file ($Version)"
+    Write-Host "SHA256 $hash"
+}
