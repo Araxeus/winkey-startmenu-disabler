@@ -16,17 +16,30 @@ The installer:
 
 1. Downloads `disable-winkey-startmenu.exe` from the latest release
 2. Checks it against the SHA-256 digest GitHub reports for the asset
-3. Verifies the build attestation if the [GitHub CLI](https://cli.github.com) is installed
-4. Copies it to `%LOCALAPPDATA%\Programs\disable-winkey-startmenu`
-5. Adds a shortcut to your Startup folder and starts it
+3. Verifies the build attestation if the [GitHub CLI](https://cli.github.com) is installed and signed in
+4. Asks for admin once through UAC
+5. Copies the exe to `C:\Program Files\disable-winkey-startmenu`
+6. Registers a logon task that runs it elevated, then starts it
+
+The app runs elevated so it also works while an admin window has focus. Windows blocks keyboard hooks from normal processes in that case.
 
 Running the installer again updates to the latest release.
+
+### Without admin rights
+
+```powershell
+& ([scriptblock]::Create((irm https://raw.githubusercontent.com/Araxeus/disable-winkey-startmenu/main/install.ps1))) -NoAdmin
+```
+
+This copies the exe to `%LOCALAPPDATA%\Programs\disable-winkey-startmenu` and adds a Startup shortcut. In this mode the Start menu still opens while an admin window has focus.
 
 ## Uninstall
 
 ```powershell
 & ([scriptblock]::Create((irm https://raw.githubusercontent.com/Araxeus/disable-winkey-startmenu/main/install.ps1))) -Uninstall
 ```
+
+This removes both install types. It asks for admin only if the admin install exists.
 
 ## Verify a download manually
 
@@ -40,8 +53,8 @@ The app runs in the tray. Its menu has a single item, **Quit**.
 
 ## Limitations
 
-- Windows blocks keyboard hooks from a normal process while an elevated (admin) window has focus. The Start menu still opens from those windows.
 - Only the left Windows key is handled.
+- With `-NoAdmin`, the Start menu still opens while an admin window has focus.
 
 ## Build locally
 
@@ -52,6 +65,8 @@ Requires PowerShell 7.
 ```
 
 The script downloads pinned AutoHotkey, Ahk2Exe and UPX releases into `.tools`, checks their SHA-256 hashes, and writes `dist/disable-winkey-startmenu.exe`.
+
+To install a local build, run `./install.ps1 -ExePath dist/disable-winkey-startmenu.exe`.
 
 ## Release
 
