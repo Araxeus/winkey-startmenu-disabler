@@ -14,6 +14,11 @@ param(
 $ErrorActionPreference = 'Stop'
 $ProgressPreference = 'SilentlyContinue'
 
+# Inno and the Windows version resource accept only numeric versions.
+if ($Version -notmatch '^\d+\.\d+\.\d+$') {
+    throw "Version must look like 1.2.3, got '$Version'. Tag releases as v1.2.3."
+}
+
 $root  = $PSScriptRoot
 $tools = Join-Path $root '.tools'
 $dist  = Join-Path $root 'dist'
