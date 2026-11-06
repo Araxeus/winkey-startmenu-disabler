@@ -43,13 +43,15 @@ jobs:
         with:
           subject-path: dist/*.exe
 
+      # Immutable releases reject files added after publishing, so publish only once both are attached.
       - name: Publish release
         if: github.ref_type == 'tag'
         shell: pwsh
         env:
           GH_TOKEN: ${{ github.token }}
           TAG: ${{ github.ref_name }}
-        run: >-
-          gh release create $env:TAG
-          dist/winkey-startmenu-disabler.exe dist/winkey-startmenu-disabler-setup.exe
-          --repo $env:GITHUB_REPOSITORY --verify-tag --generate-notes
+        run: |
+          gh release create $env:TAG --draft --verify-tag --generate-notes --repo $env:GITHUB_REPOSITORY `
+            dist/winkey-startmenu-disabler.exe dist/winkey-startmenu-disabler-setup.exe
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          gh release edit $env:TAG --draft=false --repo $env:GITHUB_REPOSITORY
