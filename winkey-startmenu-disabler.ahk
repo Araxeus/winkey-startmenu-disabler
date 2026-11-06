@@ -4,14 +4,14 @@
 ; The #SingleInstance check would run first and see the exiting launcher as a running copy.
 #SingleInstance Off
 
-;@Ahk2Exe-SetMainIcon icons\disable_start_menu.ico
-;@Ahk2Exe-AddResource icons\disable_start_menu_paused.ico, 210
-;@Ahk2Exe-SetName Disable WinKey Start Menu
-;@Ahk2Exe-SetProductName Disable WinKey Start Menu
-;@Ahk2Exe-SetDescription Disable WinKey Start Menu
+;@Ahk2Exe-SetMainIcon icons\app.ico
+;@Ahk2Exe-AddResource icons\app_paused.ico, 210
+;@Ahk2Exe-SetName WinKey Start Menu Disabler
+;@Ahk2Exe-SetProductName WinKey Start Menu Disabler
+;@Ahk2Exe-SetDescription WinKey Start Menu Disabler
 ;@Ahk2Exe-SetCompanyName Araxeus
 ;@Ahk2Exe-SetCopyright MIT License
-;@Ahk2Exe-SetOrigFilename disable-winkey-startmenu.exe
+;@Ahk2Exe-SetOrigFilename winkey-startmenu-disabler.exe
 
 ; CI replaces this version with the release tag.
 ;@Ahk2Exe-SetVersion 0.0.0
@@ -21,11 +21,11 @@ if A_IsCompiled {
     ; The admin install runs this exe elevated through a scheduled task, which passes /task.
     ; Other launches hand off to that task when it exists, and otherwise run unelevated.
     fromTask := A_Args.Length && A_Args[1] = "/task"
-    if !A_IsAdmin && !fromTask && RunWait('schtasks.exe /run /tn "disable-winkey-startmenu"', , "Hide") = 0
+    if !A_IsAdmin && !fromTask && RunWait('schtasks.exe /run /tn "winkey-startmenu-disabler"', , "Hide") = 0
         ExitApp
 
     ; One copy per session. ERROR_ACCESS_DENIED (5) means an elevated copy holds the mutex.
-    DllCall("CreateMutex", "Ptr", 0, "Int", 0, "Str", "Local\disable-winkey-startmenu", "Ptr")
+    DllCall("CreateMutex", "Ptr", 0, "Int", 0, "Str", "Local\winkey-startmenu-disabler", "Ptr")
     if A_LastError = 183 || A_LastError = 5
         ExitApp
 
@@ -53,9 +53,9 @@ UpdateTray() {
     if A_IsCompiled
         TraySetIcon(A_ScriptFullPath, A_IsSuspended ? -210 : -159, true)
     else
-        TraySetIcon(A_ScriptDir "\icons\disable_start_menu" (A_IsSuspended ? "_paused" : "") ".ico", , true)
+        TraySetIcon(A_ScriptDir "\icons\app" (A_IsSuspended ? "_paused" : "") ".ico", , true)
 
-    A_IconTip := "Disable WinKey Start Menu" (A_IsSuspended ? " (paused)" : "")
+    A_IconTip := "WinKey Start Menu Disabler" (A_IsSuspended ? " (paused)" : "")
 }
 
 LWin::Send("{LWin Down}")

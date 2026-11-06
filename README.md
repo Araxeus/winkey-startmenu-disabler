@@ -1,4 +1,4 @@
-# Disable WinKey Start Menu
+# WinKey Start Menu Disabler
 
 For people who never want the Windows key to open the Start menu, but still use it for shortcuts.
 
@@ -6,7 +6,7 @@ Pressing Win on its own does nothing. Win+E, Win+R, Win+Shift+S and every other 
 
 ## Install
 
-1. Download `disable-winkey-startmenu-setup.exe` from the [latest release](https://github.com/Araxeus/disable-winkey-startmenu/releases/latest)
+1. Download `winkey-startmenu-disabler-setup.exe` from the [latest release](https://github.com/Araxeus/winkey-startmenu-disabler/releases/latest)
 2. Run it and approve the admin prompt
 
 The setup is not code-signed, so Windows may show "Windows protected your PC". Click **More info**, then **Run anyway**.
@@ -15,15 +15,14 @@ Running a newer setup updates the app in place.
 
 ### Without admin rights
 
-Run `disable-winkey-startmenu-setup.exe /CURRENTUSER`. This install works everywhere except while an admin window is focused, because Windows blocks keyboard hooks from normal apps in admin windows.
+Run `winkey-startmenu-disabler-setup.exe /CURRENTUSER`. This install works everywhere except while an admin window is focused, because Windows blocks keyboard hooks from normal apps in admin windows.
 
 ## Usage
 
 The app starts with Windows and lives in the tray.
 
 - **Pause** gives the Win key back until you resume. The tray icon turns gray while paused. Double-clicking the tray icon also toggles it.
-- **Quit** closes the app. To start it again, open **Disable WinKey Start Menu** from the Start menu.
-
+- **Quit** closes the app. To start it again, open **WinKey Start Menu Disabler** from the Start menu.
 - Turn off starting with Windows in Task Manager › Startup apps
 - Uninstall from Settings › Apps
 
@@ -32,13 +31,13 @@ The app starts with Windows and lives in the tray.
 Install, verifying the download first:
 
 ```powershell
-irm https://raw.githubusercontent.com/Araxeus/disable-winkey-startmenu/main/install.ps1 | iex
+irm https://raw.githubusercontent.com/Araxeus/winkey-startmenu-disabler/main/install.ps1 | iex
 ```
 
 Add `-NoAdmin` or `-Uninstall` with this form:
 
 ```powershell
-& ([scriptblock]::Create((irm https://raw.githubusercontent.com/Araxeus/disable-winkey-startmenu/main/install.ps1))) -Uninstall
+& ([scriptblock]::Create((irm https://raw.githubusercontent.com/Araxeus/winkey-startmenu-disabler/main/install.ps1))) -Uninstall
 ```
 
 The script checks the setup against the SHA-256 digest GitHub reports for it. If the [GitHub CLI](https://cli.github.com) is installed and signed in, it also verifies the build attestation.
@@ -48,14 +47,14 @@ The script checks the setup against the SHA-256 digest GitHub reports for it. If
 Every release file has a signed [build provenance attestation](https://docs.github.com/en/actions/security-for-github-actions/using-artifact-attestations):
 
 ```powershell
-gh attestation verify disable-winkey-startmenu-setup.exe --repo Araxeus/disable-winkey-startmenu
+gh attestation verify winkey-startmenu-disabler-setup.exe --repo Araxeus/winkey-startmenu-disabler
 ```
 
 ## Notes
 
 - Only the left Windows key is handled
 - The app runs elevated, so it also works in admin windows. A scheduled task elevates it at startup without a UAC prompt. This applies to the user who installed it. Other users get the app without elevation.
-- Each release also includes the standalone `disable-winkey-startmenu.exe`, which runs without installing
+- Each release also includes the standalone `winkey-startmenu-disabler.exe`, which runs without installing
 
 ## Development
 

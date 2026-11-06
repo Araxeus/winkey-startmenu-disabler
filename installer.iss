@@ -5,8 +5,8 @@
 #endif
 
 #define AppGuid "833F386A-62D2-4DF9-955B-F8DF8A9F2013"
-#define AppName "Disable WinKey Start Menu"
-#define AppExe  "disable-winkey-startmenu.exe"
+#define AppName "WinKey Start Menu Disabler"
+#define AppExe  "winkey-startmenu-disabler.exe"
 
 [Setup]
 AppId={{{#AppGuid}}
@@ -14,8 +14,8 @@ AppName={#AppName}
 AppVersion={#AppVersion}
 AppVerName={#AppName} {#AppVersion}
 AppPublisher=Araxeus
-AppPublisherURL=https://github.com/Araxeus/disable-winkey-startmenu
-AppSupportURL=https://github.com/Araxeus/disable-winkey-startmenu/issues
+AppPublisherURL=https://github.com/Araxeus/winkey-startmenu-disabler
+AppSupportURL=https://github.com/Araxeus/winkey-startmenu-disabler/issues
 VersionInfoVersion={#AppVersion}
 
 ; Setup elevates through UAC and installs for all users. Declining UAC closes setup.
@@ -24,7 +24,7 @@ PrivilegesRequired=admin
 PrivilegesRequiredOverridesAllowed=commandline
 
 ; The elevated task must launch an exe that only admins can modify, so the folder stays fixed.
-DefaultDirName={autopf}\disable-winkey-startmenu
+DefaultDirName={autopf}\winkey-startmenu-disabler
 DisableDirPage=yes
 DisableProgramGroupPage=yes
 
@@ -35,20 +35,20 @@ MinVersion=10.0
 ; [Code] stops the app, so Restart Manager is not needed.
 CloseApplications=no
 
-SetupIconFile=icons\disable_start_menu.ico
+SetupIconFile=icons\app.ico
 UninstallDisplayIcon={app}\{#AppExe}
 UninstallDisplayName={#AppName}
 WizardStyle=modern
 Compression=lzma2/max
 SolidCompression=yes
 OutputDir=dist
-OutputBaseFilename=disable-winkey-startmenu-setup
+OutputBaseFilename=winkey-startmenu-disabler-setup
 
 [Files]
 Source: "dist\{#AppExe}"; DestDir: "{app}"; Flags: ignoreversion
 
 [Icons]
-Name: "{autoprograms}\{#AppName}"; Filename: "{app}\{#AppExe}"; Comment: "Stops a lone Win key press from opening the Start menu"
+Name: "{autoprograms}\{#AppName}"; Filename: "{app}\{#AppExe}"; Comment: "Keeps the Win key from opening the Start menu"
 
 ; HKA is HKLM for all-users installs and HKCU for just-me installs.
 ; Task Manager lists this entry under Startup apps.
@@ -61,7 +61,7 @@ Filename: "{app}\{#AppExe}"; Description: "Start {#AppName}"; Flags: nowait post
 
 [Code]
 const
-  TaskName = 'disable-winkey-startmenu';
+  TaskName = 'winkey-startmenu-disabler';
   UninstallKey = 'Software\Microsoft\Windows\CurrentVersion\Uninstall\{{#AppGuid}}_is1';
   ApprovedKey = 'Software\Microsoft\Windows\CurrentVersion\Explorer\StartupApproved\Run';
 

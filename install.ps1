@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-    Installs, updates, or uninstalls disable-winkey-startmenu from the command line.
+    Installs, updates, or uninstalls winkey-startmenu-disabler from the command line.
 .DESCRIPTION
     Downloads the latest setup exe, checks it against the digest GitHub reports for the release asset,
     verifies its build attestation when the GitHub CLI is installed and signed in, and runs it silently.
@@ -14,11 +14,11 @@
 .PARAMETER SetupPath
     Run a local setup exe instead of the latest release. Skips the digest and attestation checks.
 .EXAMPLE
-    irm https://raw.githubusercontent.com/Araxeus/disable-winkey-startmenu/main/install.ps1 | iex
+    irm https://raw.githubusercontent.com/Araxeus/winkey-startmenu-disabler/main/install.ps1 | iex
 .EXAMPLE
-    & ([scriptblock]::Create((irm https://raw.githubusercontent.com/Araxeus/disable-winkey-startmenu/main/install.ps1))) -NoAdmin
+    & ([scriptblock]::Create((irm https://raw.githubusercontent.com/Araxeus/winkey-startmenu-disabler/main/install.ps1))) -NoAdmin
 .EXAMPLE
-    & ([scriptblock]::Create((irm https://raw.githubusercontent.com/Araxeus/disable-winkey-startmenu/main/install.ps1))) -Uninstall
+    & ([scriptblock]::Create((irm https://raw.githubusercontent.com/Araxeus/winkey-startmenu-disabler/main/install.ps1))) -Uninstall
 #>
 param(
     [switch]$NoAdmin,
@@ -30,8 +30,8 @@ $ErrorActionPreference = 'Stop'
 $ProgressPreference = 'SilentlyContinue'
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
-$repo      = 'Araxeus/disable-winkey-startmenu'
-$setupName = 'disable-winkey-startmenu-setup.exe'
+$repo      = 'Araxeus/winkey-startmenu-disabler'
+$setupName = 'winkey-startmenu-disabler-setup.exe'
 $silent    = '/VERYSILENT', '/SUPPRESSMSGBOXES', '/NORESTART'
 
 # Matches AppId in installer.iss.
@@ -50,7 +50,7 @@ function Save-VerifiedSetup {
     $asset = $release.assets | Where-Object name -eq $setupName
     if (-not $asset) { throw "Release $($release.tag_name) has no $setupName asset." }
 
-    $tmp = Join-Path ([IO.Path]::GetTempPath()) "disable-winkey-startmenu-$([guid]::NewGuid())-setup.exe"
+    $tmp = Join-Path ([IO.Path]::GetTempPath()) "winkey-startmenu-disabler-$([guid]::NewGuid())-setup.exe"
     Write-Host "Downloading $setupName from $($release.tag_name)"
     Invoke-WebRequest $asset.browser_download_url -OutFile $tmp -UseBasicParsing
 
@@ -95,8 +95,8 @@ if ($Uninstall) {
         if (Test-Path $key) { throw 'The uninstaller did not finish. Was the UAC prompt declined?' }
     }
 
-    if ($found) { Write-Host 'Uninstalled Disable WinKey Start Menu.' }
-    else { Write-Host 'Disable WinKey Start Menu is not installed.' }
+    if ($found) { Write-Host 'Uninstalled WinKey Start Menu Disabler.' }
+    else { Write-Host 'WinKey Start Menu Disabler is not installed.' }
     return
 }
 
@@ -113,7 +113,7 @@ try {
     $p.WaitForExit()
 
     switch ($p.ExitCode) {
-        0 { Write-Host 'Installed Disable WinKey Start Menu.' }
+        0 { Write-Host 'Installed WinKey Start Menu Disabler.' }
         2 { throw 'Setup was cancelled. Was the UAC prompt declined? Run with -NoAdmin to install without admin rights.' }
         7 { throw 'Setup stopped before installing. If the app is installed for all users, run without -NoAdmin to update it, or uninstall it first.' }
         default { throw "Setup failed with exit code $($p.ExitCode)." }

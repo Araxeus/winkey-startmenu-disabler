@@ -17,7 +17,7 @@ $ProgressPreference = 'SilentlyContinue'
 $root  = $PSScriptRoot
 $tools = Join-Path $root '.tools'
 $dist  = Join-Path $root 'dist'
-$name  = 'disable-winkey-startmenu'
+$name  = 'winkey-startmenu-disabler'
 
 # Bump versions and hashes together.
 $deps = @(

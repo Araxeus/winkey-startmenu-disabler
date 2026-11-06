@@ -34,7 +34,7 @@ jobs:
         if: github.ref_type != 'tag'
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
-          name: disable-winkey-startmenu
+          name: winkey-startmenu-disabler
           path: dist/*.exe
 
       - name: Attest build provenance
@@ -51,5 +51,5 @@ jobs:
           TAG: ${{ github.ref_name }}
         run: >-
           gh release create $env:TAG
-          dist/disable-winkey-startmenu.exe dist/disable-winkey-startmenu-setup.exe
+          dist/winkey-startmenu-disabler.exe dist/winkey-startmenu-disabler-setup.exe
           --repo $env:GITHUB_REPOSITORY --verify-tag --generate-notes
