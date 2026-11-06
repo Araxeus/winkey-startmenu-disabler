@@ -68,6 +68,77 @@ const
   TASK_CREATE_OR_UPDATE = 6;
   TASK_LOGON_INTERACTIVE_TOKEN = 3;
 
+var
+  // Install, Update, Repair, or Downgrade. Set from the version already installed in this mode.
+  InstallAction: String;
+  InstalledVersion: String;
+
+function GetInstallAction: String;
+var
+  Installed, Current: Int64;
+  Order: Integer;
+begin
+  Result := 'Install';
+  if not RegQueryStringValue(HKA, UninstallKey, 'DisplayVersion', InstalledVersion) then
+    Exit;
+
+  Result := 'Update';
+  if not (StrToVersion(InstalledVersion, Installed) and StrToVersion('{#AppVersion}', Current)) then
+    Exit;
+
+  Order := ComparePackedVersion(Current, Installed);
+  if Order = 0 then
+    Result := 'Repair'
+  else if Order < 0 then
+    Result := 'Downgrade';
+end;
+
+function ActionGerund: String;
+begin
+  if InstallAction = 'Repair' then
+    Result := 'Repairing'
+  else if InstallAction = 'Update' then
+    Result := 'Updating'
+  else
+    Result := 'Downgrading';
+end;
+
+procedure InitializeWizard;
+begin
+  InstallAction := GetInstallAction;
+  Log('Install action: ' + InstallAction + ' (installed: ' + InstalledVersion + ', setup: {#AppVersion})');
+end;
+
+// Relabels the wizard when this mode already has a copy installed.
+procedure CurPageChanged(CurPageID: Integer);
+begin
+  if InstallAction = 'Install' then
+    Exit;
+
+  if CurPageID = wpReady then begin
+    WizardForm.PageNameLabel.Caption := 'Ready to ' + InstallAction;
+    WizardForm.PageDescriptionLabel.Caption := 'Setup is ready to ' + Lowercase(InstallAction) + ' {#AppName}.';
+
+    if InstallAction = 'Repair' then
+      WizardForm.ReadyLabel.Caption := 'Version ' + InstalledVersion + ' is already installed. ' +
+        'Setup will reinstall it, restoring its files, startup entry and elevated task.'
+    else if InstallAction = 'Update' then
+      WizardForm.ReadyLabel.Caption := 'Setup will update {#AppName} from version ' +
+        InstalledVersion + ' to {#AppVersion}.'
+    else
+      WizardForm.ReadyLabel.Caption := 'A newer version (' + InstalledVersion + ') is installed. ' +
+        'Setup will replace it with version {#AppVersion}.';
+
+    WizardForm.NextButton.Caption := '&' + InstallAction;
+  end
+  else if CurPageID = wpInstalling then begin
+    WizardForm.PageNameLabel.Caption := ActionGerund;
+    WizardForm.PageDescriptionLabel.Caption := 'Please wait while Setup ' + Lowercase(InstallAction) + 's {#AppName}.';
+  end
+  else if CurPageID = wpFinished then
+    WizardForm.FinishedLabel.Caption := 'Setup has finished ' + Lowercase(ActionGerund) + ' {#AppName}.';
+end;
+
 procedure StopApp;
 var
   ResultCode: Integer;
