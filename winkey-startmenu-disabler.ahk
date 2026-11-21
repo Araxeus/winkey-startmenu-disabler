@@ -42,8 +42,7 @@ A_TrayMenu.Default := "Pause"
 UpdateTray()
 
 ; A press already in progress at startup belongs to Windows.
-winHeld := GetKeyState("LWin")
-maskOnRelease := false
+winHold := WinKeyHold(GetKeyState("LWin"))
 maskTag := 0x57534D44 ; "WSMD", carried in KEYBDINPUT.dwExtraInfo
 maskedRelease := MakeMaskedRelease()
 InstallInputHook(14, MouseEvent)    ; WH_MOUSE_LL
@@ -51,8 +50,7 @@ InstallInputHook(13, KeyboardEvent) ; WH_KEYBOARD_LL
 Persistent()
 
 TogglePause(*) {
-    global maskOnRelease
-    maskOnRelease := false
+    winHold.CancelMask()
     Suspend(-1)
     A_TrayMenu.ToggleCheck("Pause")
     UpdateTray()
@@ -78,35 +76,57 @@ InstallInputHook(kind, handler) {
 }
 
 KeyboardEvent(code, message, data) {
-    global winHeld, maskOnRelease, maskedRelease, maskTag
     ; Ignore our replacement even if a new physical press has already started.
     if code = 0 && NumGet(data, 16, "UPtr") != maskTag {
-        vk := NumGet(data, "UInt")
-        if vk != 0x5B { ; Any other key uses or modifies the hold.
-            maskOnRelease := false
-        } else if NumGet(data, 8, "UInt") & 0x80 { ; LLKHF_UP
-            mask := maskOnRelease && !A_IsSuspended
-            winHeld := maskOnRelease := false
-            ; Suppress the original up only if Windows accepted the entire replacement.
-            if mask && DllCall("SendInput", "UInt", 3, "Ptr", maskedRelease,
-                "Int", maskedRelease.Size // 3, "UInt") = 3
-                return 1
-        } else if !winHeld {
-            ; Repeated Win downs must preserve any shortcut or click seen during this hold.
-            winHeld := true
-            maskOnRelease := !A_IsSuspended && !GetKeyState("Shift") && !GetKeyState("Ctrl")
-                && !GetKeyState("Alt") && !GetKeyState("RWin")
-        }
+        keyUp := NumGet(data, 8, "UInt") & 0x80 ; LLKHF_UP
+        ; Suppress the original up only if Windows accepted the entire replacement.
+        if winHold.Keyboard(NumGet(data, "UInt"), keyUp) && DllCall("SendInput",
+            "UInt", 3, "Ptr", maskedRelease, "Int", maskedRelease.Size // 3, "UInt") = 3
+            return 1
     }
     return NextInputHook(code, message, data)
 }
 
 MouseEvent(code, message, data) {
-    global maskOnRelease
-    ; Moving the pointer is part of aiming Click to Do. A button or wheel uses the hold.
-    if code = 0 && message != 0x0200 ; WM_MOUSEMOVE
-        maskOnRelease := false
+    if code = 0
+        winHold.Mouse(message)
     return NextInputHook(code, message, data)
+}
+
+class WinKeyHold {
+    __New(alreadyHeld := false) {
+        this.held := alreadyHeld
+        this.maskOnRelease := false
+    }
+
+    ; True requests a masked release. All other keyboard events pass through.
+    Keyboard(vk, keyUp) {
+        if vk != 0x5B {
+            this.CancelMask()
+        } else if keyUp {
+            mask := this.maskOnRelease && !A_IsSuspended
+            this.held := false
+            this.CancelMask()
+            return mask
+        } else if !this.held {
+            ; Repeats must preserve any shortcut or click seen during this hold.
+            this.held := true
+            this.maskOnRelease := !A_IsSuspended && !this.ModifierDown()
+        }
+        return false
+    }
+
+    ModifierDown() => GetKeyState("Shift") || GetKeyState("Ctrl") || GetKeyState("Alt") || GetKeyState("RWin")
+
+    Mouse(message) {
+        ; Moving the pointer is part of aiming Click to Do. A button or wheel uses the hold.
+        if message != 0x0200 ; WM_MOUSEMOVE
+            this.CancelMask()
+    }
+
+    CancelMask() {
+        this.maskOnRelease := false
+    }
 }
 
 NextInputHook(code, message, data) {

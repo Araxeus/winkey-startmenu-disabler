@@ -66,6 +66,10 @@ The app is an AutoHotkey v2 script compiled with Ahk2Exe and UPX, packaged with 
 
 `build.ps1` downloads pinned, hash-checked tools into `.tools` and writes both exes to `dist/`.
 
+Every pull request builds both executables, tests which keyboard and mouse sequences trigger a masked Win release, and silently installs and uninstalls the build for the runner's current user. The workflow keeps the executables as a PR artifact for seven days.
+
+For changes to the input hooks, also try the PR build on a Windows 11 PC with Click to Do. Check that Win+V and a quick Win+. stay open after release, holding Win and clicking opens Click to Do, and releasing Win without clicking keeps Start closed.
+
 To release, push a tag such as `v1.0.0`. The `Release` workflow builds, attests and publishes both exes. A manual workflow run uploads a test build as an artifact instead.
 
 ## License
