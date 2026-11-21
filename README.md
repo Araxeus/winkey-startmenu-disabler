@@ -2,7 +2,7 @@
 
 For people who never want the Windows key to open the Start menu, but still use it for shortcuts.
 
-Pressing Win on its own does nothing. Win+E, Win+R, Win+Shift+S and every other Win shortcut work as usual, and clicking the Start button still opens the Start menu.
+Tapping the left Win key or releasing it after a hold keeps Start closed. Win shortcuts such as Win+V (clipboard history) and Win+. (emoji) work as usual. On PCs with Click to Do, you can hold Win and click to open the overlay. Clicking the Start button still opens the Start menu.
 
 ## Install
 
