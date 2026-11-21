@@ -1,0 +1,44 @@
+name: Pull request
+
+on: pull_request
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pr-windows-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  windows:
+    name: Windows PR check
+    runs-on: windows-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        shell: pwsh
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Build executable and installer
+        run: ./build.ps1 -Version 0.0.0
+
+      - name: Test keyboard and mouse handling
+        run: |
+          & ./.tools/ahk/AutoHotkey64.exe /ErrorStdOut ./tests/input.ahk | Out-Host
+          exit $LASTEXITCODE
+
+      - name: Test silent current-user install and uninstall
+        run: ./tests/installer.ps1
+
+      - name: Upload PR build
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: winkey-startmenu-disabler-pr-${{ github.event.pull_request.number }}
+          path: |
+            dist/winkey-startmenu-disabler.exe
+            dist/winkey-startmenu-disabler-setup.exe
+          if-no-files-found: error
+          retention-days: 7
